@@ -1,13 +1,11 @@
-﻿using DiscordRPC.Logging;
-using DiscordRPC;
+﻿using DiscordRPC;
+using IWshRuntimeLibrary;
 using System;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Windows;
-using System.Threading;
-using System.Security.Cryptography.X509Certificates;
 namespace OSFRLauncher
 {
     enum LauncherStatus
@@ -53,6 +51,7 @@ namespace OSFRLauncher
         public MainWindow()
         {
             Initialize();
+            CreateShortcut();
             path = Directory.GetCurrentDirectory();
             clientzip = Path.Combine(path, "Client.zip");
             serverzip = Path.Combine(path, "Server.zip");
@@ -84,17 +83,17 @@ namespace OSFRLauncher
         {
             try
             {
-                if (File.Exists(serverzip))
+                if (System.IO.File.Exists(serverzip))
                 {
                     // Extracts server files
                     ZipFile.ExtractToDirectory(serverzip, path);
-                    File.Delete(serverzip);
+                    System.IO.File.Delete(serverzip);
                 }
-                if (File.Exists(clientzip))
+                if (System.IO.File.Exists(clientzip))
                 {
                     // Extracts client files
                     ZipFile.ExtractToDirectory(clientzip, path);
-                    File.Delete(clientzip);
+                    System.IO.File.Delete(clientzip);
                     Status = LauncherStatus.ready;
                     progressBar.Visibility = Visibility.Hidden;
                     progressPercent.Visibility = Visibility.Hidden;
@@ -138,8 +137,26 @@ namespace OSFRLauncher
                 },
             });
         }
+
+        private void CreateShortcut()
+        {
+            // Creates a shortcut on the desktop
+            object shDesktop = (object)"Desktop";
+            WshShell shell = new WshShell();
+            string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + @"\OSFR Launcher.lnk";
+            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
+            shortcut.Description = "A Launcher For Open Source Free Realms";
+            shortcut.TargetPath = Environment.CurrentDirectory + @"\OSFR Launcher.exe";
+            shortcut.Save();
+        }
     }
 }
+
+
+
+
+
+
 
 
 
