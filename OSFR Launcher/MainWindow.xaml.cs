@@ -33,7 +33,7 @@ namespace OSFRLauncher
                 switch (_status)
                 {
                     case LauncherStatus.ready:
-                        Button.Content = "Play";
+                        PlayButton.Content = "Play";
                         break;
                     case LauncherStatus.installing:
                         StatusInfo.Text = "Installing...";
@@ -57,6 +57,7 @@ namespace OSFRLauncher
         {
             Initialize();
             CreateShortcut();
+            InitializeComponent();
             path = Directory.GetCurrentDirectory();
             clientzip = Path.Combine(path, "Client.zip");
             serverzip = Path.Combine(path, "Server.zip");
@@ -65,7 +66,7 @@ namespace OSFRLauncher
         private async void Download(object sender, RoutedEventArgs e)
         {
             progressBar.Visibility = Visibility.Visible;
-            Button.Visibility = Visibility.Hidden;
+            Installbutton.Visibility = Visibility.Hidden;
             try
             {
                 // Downloads client and server files
@@ -101,10 +102,11 @@ namespace OSFRLauncher
                     Status = LauncherStatus.extracting;
                     await Task.Run(() => ZipFile.ExtractToDirectory(clientzip, path));
                     System.IO.File.Delete(clientzip);
-                    Status = LauncherStatus.ready;
-                    Button.Visibility = Visibility.Visible;
+                    Installbutton.Visibility = Visibility.Visible;
                     progressBar.Visibility = Visibility.Hidden;
-                    StatusInfo.Visibility = Visibility.Hidden;         
+                    StatusInfo.Visibility = Visibility.Hidden;
+                    Installbutton.Visibility = Visibility.Hidden;
+                    PlayButton.Visibility = Visibility.Visible;
                     taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
                 }
             }
@@ -158,16 +160,10 @@ namespace OSFRLauncher
             shortcut.TargetPath = Environment.CurrentDirectory + @"\OSFR Launcher.exe";
             shortcut.Save();
         }
+
+        private void StartGame(object sender, RoutedEventArgs e)
+        {
+            // TODO
+        }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
