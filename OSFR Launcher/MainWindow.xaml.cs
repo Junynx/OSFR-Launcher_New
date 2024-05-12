@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Threading.Tasks;
 using System.Windows;
 namespace OSFRLauncher
 {
@@ -13,6 +14,7 @@ namespace OSFRLauncher
         ready,
         installing,
         installingfailed,
+        extracting,
         extractingfailed
     }
 
@@ -34,13 +36,16 @@ namespace OSFRLauncher
                         Button.Content = "Play";
                         break;
                     case LauncherStatus.installing:
-                        Button.Content = "Installing";
+                        StatusInfo.Text = "Installing...";
                         break;
                     case LauncherStatus.installingfailed:
-                        Button.Content = "Installing Failed";
+                        StatusInfo.Text = "Installing Failed...";
+                        break;
+                    case LauncherStatus.extracting:
+                        StatusInfo.Text = "Extracting...";
                         break;
                     case LauncherStatus.extractingfailed:
-                        Button.Content = "Extracting Failed";
+                        StatusInfo.Text = "Extracting Failed...";
                         break;
                     default:
                         break;
@@ -60,7 +65,7 @@ namespace OSFRLauncher
         private async void Download(object sender, RoutedEventArgs e)
         {
             progressBar.Visibility = Visibility.Visible;
-            progressPercent.Visibility = Visibility.Visible;
+            Button.Visibility = Visibility.Hidden;
             try
             {
                 // Downloads client and server files
@@ -75,11 +80,12 @@ namespace OSFRLauncher
             {
                 // Catch error when installing the game files has failed
                 Status = LauncherStatus.installingfailed;
+                taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Error;
                 MessageBox.Show($"Error installing game files: {error}");
             }
         }
 
-        private void ExtractFiles(object sender, AsyncCompletedEventArgs e)
+        private async void ExtractFiles(object sender, AsyncCompletedEventArgs e)
         {
             try
             {
@@ -92,17 +98,21 @@ namespace OSFRLauncher
                 if (System.IO.File.Exists(clientzip))
                 {
                     // Extracts client files
-                    ZipFile.ExtractToDirectory(clientzip, path);
+                    Status = LauncherStatus.extracting;
+                    await Task.Run(() => ZipFile.ExtractToDirectory(clientzip, path));
                     System.IO.File.Delete(clientzip);
                     Status = LauncherStatus.ready;
+                    Button.Visibility = Visibility.Visible;
                     progressBar.Visibility = Visibility.Hidden;
-                    progressPercent.Visibility = Visibility.Hidden;
+                    StatusInfo.Visibility = Visibility.Hidden;         
+                    taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
                 }
             }
             catch (Exception error)
             {
                 // Catch error if extracting has failed
                 Status = LauncherStatus.extractingfailed;
+                taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Error;
                 MessageBox.Show($"Error extracting game files: {error}");
             }
         }
@@ -110,7 +120,6 @@ namespace OSFRLauncher
         private void DownloadProgress(object sender, DownloadProgressChangedEventArgs e)
         {
             progressBar.Value = e.ProgressPercentage;
-            progressPercent.Text = "%" + (e.ProgressPercentage).ToString();
         }
 
         // Discord RPC

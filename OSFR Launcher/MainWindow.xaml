@@ -21,10 +21,10 @@
                 </EventTrigger>
             </MediaElement.Triggers>
         </MediaElement>
-        <Image Stretch="Uniform" Source="images/OSFRLogo.png" VerticalAlignment="Top" HorizontalAlignment="Center" Height="500" Margin="30,-14,0,0"/>
-        <ProgressBar x:Name="progressBar" Height="30" Width="500" HorizontalAlignment="Center" Margin="0,350,0,-15" VerticalAlignment="Center" Opacity="0.6" Visibility="Hidden"/>
-        <TextBlock Name="progressPercent" Text="%" Height="20" FontSize="14" Foreground="#DDFFFFFF" Margin="0,478,0,0"  Visibility="Hidden" VerticalAlignment="Center" MinWidth="150" Padding="10,1,10,1" FontFamily="Yu Gothic UI Semibold" FontWeight="Bold" HorizontalAlignment="Center" Width="49" TextAlignment="Center"/>
+        <Image Stretch="Uniform" Source="images/OSFRLogo.png" VerticalAlignment="Center" HorizontalAlignment="Center" Height="500" Margin="10,-120,0,0"/>
+        <ProgressBar x:Name="progressBar" Height="30" Width="520" HorizontalAlignment="Center" Margin="0,180,0,-15" VerticalAlignment="Center" Opacity="0.6" Visibility="Hidden"/>
         <TextBlock Name="Version" Text="Version 1.0.0" Height="20" FontSize="14" Foreground="#DDFFFFFF" Margin="0,530,0,0" VerticalAlignment="Top" MinWidth="150" Padding="10,1,10,1" FontFamily="Yu Gothic UI Semibold" FontWeight="Bold" HorizontalAlignment="Center" Width="49" TextAlignment="Center" Opacity="0.4"/>
+        <TextBlock Name="StatusInfo" Text="" Height="20" FontSize="14" Foreground="#DDFFFFFF" Margin="0,410,0,0" VerticalAlignment="Top" MinWidth="150" Padding="10,1,10,1" FontFamily="Yu Gothic UI Semibold" FontWeight="Bold" HorizontalAlignment="Center" Width="49" TextAlignment="Center" Opacity="0.9"/>
         <Button Name="Button" Content="Install" Click="Download" Height="50" FontSize="28" FontWeight="Bold" Foreground="#DDFFFFFF" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="150" Padding="10,1,10,1" FontFamily="Yu Gothic UI Semibold" Margin="0,0,0,-180" BorderThickness="1,1,1,1" Opacity="0.85" RenderTransformOrigin="0.5,0.5" ClickMode="Press" Cursor="Hand" ForceCursor="True">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -38,5 +38,9 @@
                 </Style>
             </Button.Resources>
         </Button>
+        
     </Grid>
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo x:Name="taskbar"/>
+    </Window.TaskbarItemInfo>
 </Window>
