@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using Octokit;
 using System.Text;
-
 namespace OSFRLauncher
 {
     enum LauncherStatus
