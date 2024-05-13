@@ -7,6 +7,9 @@ using System.IO.Compression;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
+using Octokit;
+using System.Text;
+
 namespace OSFRLauncher
 {
     enum LauncherStatus
@@ -15,7 +18,10 @@ namespace OSFRLauncher
         installing,
         installingfailed,
         extracting,
-        extractingfailed
+        extractingfailed,
+        updating,
+        updatingfailed,
+        uptodate
     }
 
     public partial class MainWindow : Window
@@ -23,6 +29,7 @@ namespace OSFRLauncher
         private string path;
         private string clientzip;
         private string serverzip;
+        private string launcherzip;
         private LauncherStatus _status;
         internal LauncherStatus Status
         {
@@ -47,6 +54,15 @@ namespace OSFRLauncher
                     case LauncherStatus.extractingfailed:
                         StatusInfo.Text = "Extracting Failed...";
                         break;
+                    case LauncherStatus.updating:
+                        Update.Content = "Updating...";
+                        break;
+                    case LauncherStatus.updatingfailed:
+                        Update.Content = "Updating Failed...";
+                        break;
+                    case LauncherStatus.uptodate:
+                        Update.Content = "Up to Date!";
+                        break;
                     default:
                         break;
                 }
@@ -61,6 +77,7 @@ namespace OSFRLauncher
             path = Directory.GetCurrentDirectory();
             clientzip = Path.Combine(path, "Client.zip");
             serverzip = Path.Combine(path, "Server.zip");
+            launcherzip = Path.Combine(path, "OSFRLauncher-win32-x64.7z");
         }
 
         private async void Download(object sender, RoutedEventArgs e)
@@ -164,6 +181,52 @@ namespace OSFRLauncher
         private void StartGame(object sender, RoutedEventArgs e)
         {
             // TODO
+        }
+
+        private async void CheckForUpdate(object sender, RoutedEventArgs e)
+        {
+            string workspacename = "Open-Source-Free-Realms";
+            string repositoryname = "OSFR-Launcher";
+            string filename = "OSFRLauncher-win32-x64.7z";
+
+            var client = new GitHubClient(new ProductHeaderValue(repositoryname));
+
+            // Retrieve a List of Releases in the Repository
+            var releases = await client.Repository.Release.GetAll(workspacename, repositoryname);
+            var latest = releases[0];
+
+            // Get a httpresponse from the url
+            var response = await client.Connection.GetResponse<object>(new Uri(latest.ZipballUrl));
+            byte[] releaseBytes = Encoding.ASCII.GetBytes(response.HttpResponse.Body.ToString());
+
+            // Create the resulting file using the byte array
+            await Task.Run(() => System.IO.File.WriteAllBytes(filename, releaseBytes));
+
+            // Setup the versions
+            Version latestGitHubVersion = new Version(releases[0].TagName);
+            Version localVersion = new Version("2.1.7");
+
+            // Compare versions
+            int versionComparison = localVersion.CompareTo(latestGitHubVersion);
+            if (versionComparison < 0)
+            {
+                // Downloads the files
+                Status = LauncherStatus.updating;
+                var webClient = new WebClient();
+                webClient.Headers.Add(HttpRequestHeader.UserAgent, "user-agent");
+                await webClient.DownloadFileTaskAsync(new Uri(latest.ZipballUrl), filename);
+
+                // Extracts the downloaded files
+                await Task.Run(() => ZipFile.ExtractToDirectory(launcherzip, path));
+                await Task.Run(() => System.IO.File.Delete(launcherzip));
+            }
+            else
+            {
+                Status = LauncherStatus.uptodate;
+                System.IO.File.Delete(launcherzip);
+            }
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            Update.Content = "Check for Updates";
         }
     }
 }
