@@ -9,11 +9,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using Octokit;
 using System.Text;
+using System.Diagnostics;
 namespace OSFRLauncher
 {
     enum LauncherStatus
     {
-        ready,
+        play,
+        running,
         installing,
         installingfailed,
         extracting,
@@ -26,6 +28,7 @@ namespace OSFRLauncher
     public partial class MainWindow : Window
     {
         private string path;
+        private string clientexe;
         private string clientzip;
         private string serverzip;
         private string launcherzip;
@@ -38,8 +41,11 @@ namespace OSFRLauncher
                 _status = value;
                 switch (_status)
                 {
-                    case LauncherStatus.ready:
+                    case LauncherStatus.play:
                         PlayButton.Content = "Play";
+                        break;
+                    case LauncherStatus.running:
+                        PlayButton.Content = "Playing";
                         break;
                     case LauncherStatus.installing:
                         StatusInfo.Text = "Installing...";
@@ -76,7 +82,18 @@ namespace OSFRLauncher
             path = Directory.GetCurrentDirectory();
             clientzip = Path.Combine(path, "Client.zip");
             serverzip = Path.Combine(path, "Server.zip");
+            clientexe = Path.Combine(path, "Client", "FreeRealms.bat");
             launcherzip = Path.Combine(path, "OSFRLauncher-win32-x64.7z");
+        }
+
+        private void CheckFiles(object sender, EventArgs e)
+        {
+            if (System.IO.File.Exists(clientexe))
+            {
+                PlayButton.Visibility = Visibility.Visible;
+                Installbutton.Visibility = Visibility.Hidden;
+            }
+
         }
 
         private async void Download(object sender, RoutedEventArgs e)
@@ -177,9 +194,24 @@ namespace OSFRLauncher
             shortcut.Save();
         }
 
-        private void StartGame(object sender, RoutedEventArgs e)
+        private void StartClient(object sender, RoutedEventArgs e)
         {
-            // TODO
+            try
+            {
+                if (System.IO.File.Exists(clientexe) && Status == LauncherStatus.play)
+                {
+                    // Starts the client bat
+                    Status = LauncherStatus.running;
+                    ProcessStartInfo start = new ProcessStartInfo(clientexe);
+                    start.WorkingDirectory = Path.Combine(path, "Client");
+                    Process.Start(start);
+                }
+            }
+            catch (Exception error)
+            {
+                // Catch error
+                MessageBox.Show($"Error occured while launching the client: {error}");
+            }
         }
 
         private async void CheckForUpdate(object sender, RoutedEventArgs e)
@@ -225,7 +257,7 @@ namespace OSFRLauncher
                 System.IO.File.Delete(launcherzip);
             }
             await Task.Delay(TimeSpan.FromSeconds(2));
-            Update.Content = "Check for Updates";
+            Update.Content = "Check for Updates!";
         }
     }
 }
