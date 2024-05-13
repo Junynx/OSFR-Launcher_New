@@ -34,7 +34,7 @@
                 </Style>
             </Button.Resources>
         </Button>
-        <Button Name="PlayButton" Click="StartClient" Visibility="Visible" Height="50" FontSize="28" FontWeight="Bold" Foreground="#DDFFFFFF" VerticalAlignment="Center" Width="165" HorizontalAlignment="Center" Content="Play" FontFamily="Yu Gothic UI Semibold" Margin="0,0,0,-135" Opacity="0.85" ClickMode="Press" Cursor="Hand" BorderBrush="{x:Null}">
+        <Button Name="PlayButton" Click="StartClient" Visibility="Hidden" Height="50" FontSize="28" FontWeight="Bold" Foreground="#DDFFFFFF" VerticalAlignment="Center" Width="165" HorizontalAlignment="Center" Content="Play" FontFamily="Yu Gothic UI Semibold" Margin="0,0,0,-135" Opacity="0.85" ClickMode="Press" Cursor="Hand" BorderBrush="{x:Null}">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF64F73C" Offset="0.1"/>
@@ -47,7 +47,7 @@
                 </Style>
             </Button.Resources>
         </Button>
-        <Button Name="Installbutton" Visibility="Hidden" Content="Install" Click="Download" Height="50" FontSize="28" FontWeight="Bold" Foreground="#DDFFFFFF" VerticalAlignment="Center" Width="165" HorizontalAlignment="Center" FontFamily="Yu Gothic UI Semibold" Margin="0,0,0,-130" Opacity="0.85" ClickMode="Press" Cursor="Hand" BorderBrush="{x:Null}">
+        <Button Name="Installbutton" Visibility="Visible" Content="Install" Click="Download" Height="50" FontSize="28" FontWeight="Bold" Foreground="#DDFFFFFF" VerticalAlignment="Center" Width="165" HorizontalAlignment="Center" FontFamily="Yu Gothic UI Semibold" Margin="0,0,0,-130" Opacity="0.85" ClickMode="Press" Cursor="Hand" BorderBrush="{x:Null}">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF64F73C" Offset="0.1"/>
