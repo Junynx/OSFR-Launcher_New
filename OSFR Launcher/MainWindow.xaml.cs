@@ -94,7 +94,10 @@ namespace OSFRLauncher
                 PlayButton.Visibility = Visibility.Visible;
                 Installbutton.Visibility = Visibility.Hidden;
             }
-
+            else
+            {
+                Installbutton.Visibility = Visibility.Visible;
+            }
         }
 
         private async void Download(object sender, RoutedEventArgs e)
@@ -234,8 +237,9 @@ namespace OSFRLauncher
             WshShell shell = new WshShell();
             string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + @"\OSFR Launcher.lnk";
             IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
-            shortcut.Description = "A Launcher For Open Source Free Realms";
+            shortcut.WorkingDirectory = Environment.CurrentDirectory;
             shortcut.TargetPath = Environment.CurrentDirectory + @"\OSFR Launcher.exe";
+            shortcut.IconLocation = Environment.CurrentDirectory + @"\images\" + "icon.ico";
             shortcut.Save();
         }
 
