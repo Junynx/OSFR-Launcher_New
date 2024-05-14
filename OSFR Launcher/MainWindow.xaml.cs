@@ -32,6 +32,7 @@ namespace OSFRLauncher
         private string clientzip;
         private string serverzip;
         private string launcherzip;
+        private string directx9exe;
         private LauncherStatus _status;
         internal LauncherStatus Status
         {
@@ -98,24 +99,70 @@ namespace OSFRLauncher
 
         private async void Download(object sender, RoutedEventArgs e)
         {
-            progressBar.Visibility = Visibility.Visible;
-            Installbutton.Visibility = Visibility.Hidden;
             try
             {
-                // Downloads client and server files
-                Status = LauncherStatus.installing;
-                WebClient webClient = new WebClient();
-                webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
-                webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(ExtractFiles);
-                await webClient.DownloadFileTaskAsync(new Uri("https://osfr.editz.dev/Server.zip"), serverzip);
-                await webClient.DownloadFileTaskAsync(new Uri("https://osfr.editz.dev/Client.zip"), clientzip);
+                string systemfolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string systempath = systemfolder + @"\Windows\System32\d3dx9_31.dll";
+                if (!Directory.Exists(systempath))
+                {
+                    // Downloads client and server files
+                    Status = LauncherStatus.installing;
+                    progressBar.Visibility = Visibility.Visible;
+                    Installbutton.Visibility = Visibility.Hidden;
+                    WebClient webClient = new WebClient();
+                    webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
+                    webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(ExtractFiles);
+                    await webClient.DownloadFileTaskAsync(new Uri("https://osfr.editz.dev/Server.zip"), serverzip);
+                    await webClient.DownloadFileTaskAsync(new Uri("https://osfr.editz.dev/Client.zip"), clientzip);
+                }
+                else
+                {
+                    Directx9Installer();
+                }
             }
             catch (Exception error)
             {
                 // Catch error when installing the game files has failed
                 Status = LauncherStatus.installingfailed;
-                taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Error;
                 MessageBox.Show($"Error installing game files: {error}");
+            }
+        }
+
+        private async void Directx9Installer()
+        {
+            try
+            {
+                StatusInfo.Text = "installing Directx9...";
+                progressBar.Visibility = Visibility.Visible;
+                Installbutton.Visibility = Visibility.Hidden;
+                WebClient webClient = new WebClient();
+                string directx9folder = Path.Combine(path, "directx9");
+                Directory.CreateDirectory(directx9folder);
+                directx9exe = Path.Combine(directx9folder, "dxwebsetup.exe");
+                webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
+                webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(RunDirectx9Installer);
+                await webClient.DownloadFileTaskAsync(new Uri("https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe"), directx9exe);
+            }
+            catch (Exception error)
+            {
+                // Catch error when installing directx9 has failed
+                MessageBox.Show($"Error installing directx9: {error}");
+            }
+        }
+
+        private void RunDirectx9Installer(object sender, AsyncCompletedEventArgs e)
+        {
+            try
+            {
+                ProcessStartInfo start = new ProcessStartInfo(directx9exe);
+                start.WorkingDirectory = Path.Combine(path, "dxwebsetup.exe");
+                Process.Start(start);
+                Close();
+            }
+            catch (Exception error)
+            {
+                // Catch error when launching directx9 installer has failed
+                MessageBox.Show($"Error running directx9 installer: {error}");
             }
         }
 
@@ -140,14 +187,12 @@ namespace OSFRLauncher
                     StatusInfo.Visibility = Visibility.Hidden;
                     Installbutton.Visibility = Visibility.Hidden;
                     PlayButton.Visibility = Visibility.Visible;
-                    taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
                 }
             }
             catch (Exception error)
             {
                 // Catch error if extracting has failed
                 Status = LauncherStatus.extractingfailed;
-                taskbar.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Error;
                 MessageBox.Show($"Error extracting game files: {error}");
             }
         }
