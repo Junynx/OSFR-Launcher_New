@@ -30,7 +30,6 @@ namespace OSFRLauncher
         private string clientexe;
         private string clientzip;
         private string serverzip;
-        private string launcherzip;
         private string directx9exe;
         private LauncherStatus _status;
         internal LauncherStatus Status
@@ -83,7 +82,6 @@ namespace OSFRLauncher
             clientzip = Path.Combine(path, "Client.zip");
             serverzip = Path.Combine(path, "Server.zip");
             clientexe = Path.Combine(path, "Client", "FreeRealms.bat");
-            launcherzip = Path.Combine(path, "OSFRLauncher-win32-x64.7z");
         }
 
         private void CheckFiles(object sender, EventArgs e)
