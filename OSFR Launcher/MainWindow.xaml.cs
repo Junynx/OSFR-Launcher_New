@@ -90,6 +90,8 @@ namespace OSFRLauncher
             {
                 PlayButton.Visibility = Visibility.Visible;
                 Installbutton.Visibility = Visibility.Hidden;
+                Update.Visibility = Visibility.Visible;
+                Version.Visibility = Visibility.Visible;
             }
             else
             {
@@ -106,13 +108,15 @@ namespace OSFRLauncher
                 if (!System.IO.File.Exists(systempath))
                 {
                     // Downloads client and server files
-                    Status = LauncherStatus.installing;
                     progressBar.Visibility = Visibility.Visible;
                     Installbutton.Visibility = Visibility.Hidden;
+                    Version.Visibility = Visibility.Hidden;
                     WebClient webClient = new WebClient();
                     webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
                     webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(ExtractFiles);
+                    StatusInfo.Text = "Installing Server Files...";
                     await webClient.DownloadFileTaskAsync(new Uri("https://osfr.editz.dev/Server.zip"), serverzip);
+                    StatusInfo.Text = "Installing Client Files...";
                     await webClient.DownloadFileTaskAsync(new Uri("https://osfr.editz.dev/Client.zip"), clientzip);
                 }
                 else
@@ -173,13 +177,14 @@ namespace OSFRLauncher
                 if (System.IO.File.Exists(serverzip))
                 {
                     // Extracts server files
+                    StatusInfo.Text = "Extracting Server Files...";
                     ZipFile.ExtractToDirectory(serverzip, path);
                     System.IO.File.Delete(serverzip);
                 }
                 if (System.IO.File.Exists(clientzip))
                 {
                     // Extracts client files
-                    Status = LauncherStatus.extracting;
+                    StatusInfo.Text = "Extracting Client Files...";
                     await Task.Run(() => ZipFile.ExtractToDirectory(clientzip, path));
                     System.IO.File.Delete(clientzip);
                     Installbutton.Visibility = Visibility.Visible;
@@ -187,6 +192,8 @@ namespace OSFRLauncher
                     StatusInfo.Visibility = Visibility.Hidden;
                     Installbutton.Visibility = Visibility.Hidden;
                     PlayButton.Visibility = Visibility.Visible;
+                    Update.Visibility = Visibility.Visible;
+                    Version.Visibility = Visibility.Visible;
                 }
             }
             catch (Exception error)
