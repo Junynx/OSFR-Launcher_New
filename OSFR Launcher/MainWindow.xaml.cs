@@ -251,6 +251,8 @@ namespace OSFRLauncher
                     ProcessStartInfo start = new ProcessStartInfo(clientexe);
                     start.WorkingDirectory = Path.Combine(path, "Client");
                     Process.Start(start);
+                    Process.GetProcessesByName("OSFR Launcher.exe");
+                    WindowState = WindowState.Minimized;
                 }
             }
             catch (Exception error)
