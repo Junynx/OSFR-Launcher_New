@@ -8,7 +8,6 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
 using Octokit;
-using System.Text;
 using System.Diagnostics;
 namespace OSFRLauncher
 {
@@ -67,7 +66,7 @@ namespace OSFRLauncher
                         Update.Content = "Updating Failed...";
                         break;
                     case LauncherStatus.uptodate:
-                        Update.Content = "Up to Date!";
+                        Update.Content = "No Update Found";
                         break;
                     default:
                         break;
@@ -106,7 +105,7 @@ namespace OSFRLauncher
             {
                 string systemfolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 string systempath = systemfolder + @"\Windows\System32\d3dx9_31.dll";
-                if (!Directory.Exists(systempath))
+                if (!System.IO.File.Exists(systempath))
                 {
                     // Downloads client and server files
                     Status = LauncherStatus.installing;
@@ -265,26 +264,17 @@ namespace OSFRLauncher
 
         private async void CheckForUpdate(object sender, RoutedEventArgs e)
         {
-            string workspacename = "Open-Source-Free-Realms";
-            string repositoryname = "OSFR-Launcher";
-            string filename = "OSFRLauncher-win32-x64.7z";
+            string workspacename = "Junynx";
+            string repositoryname = "OSFRLauncher";
+            string filename = "release.zip";
 
             var client = new GitHubClient(new ProductHeaderValue(repositoryname));
-
-            // Retrieve a List of Releases in the Repository
-            var releases = await client.Repository.Release.GetAll(workspacename, repositoryname);
-            var latest = releases[0];
-
-            // Get a httpresponse from the url
-            var response = await client.Connection.GetResponse<object>(new Uri(latest.ZipballUrl));
-            byte[] releaseBytes = Encoding.ASCII.GetBytes(response.HttpResponse.Body.ToString());
-
-            // Create the resulting file using the byte array
-            await Task.Run(() => System.IO.File.WriteAllBytes(filename, releaseBytes));
+            Release latestRelease = client.Repository.Release.GetLatest(workspacename, repositoryname).Result;
+            var asset = latestRelease.Assets[0];
 
             // Setup the versions
-            Version latestGitHubVersion = new Version(releases[0].TagName);
-            Version localVersion = new Version("2.1.7");
+            Version latestGitHubVersion = new Version(latestRelease.TagName);
+            Version localVersion = new Version("1.0.0");
 
             // Compare versions
             int versionComparison = localVersion.CompareTo(latestGitHubVersion);
@@ -294,19 +284,19 @@ namespace OSFRLauncher
                 Status = LauncherStatus.updating;
                 var webClient = new WebClient();
                 webClient.Headers.Add(HttpRequestHeader.UserAgent, "user-agent");
-                await webClient.DownloadFileTaskAsync(new Uri(latest.ZipballUrl), filename);
+                await webClient.DownloadFileTaskAsync(asset.BrowserDownloadUrl, filename);
 
                 // Extracts the downloaded files
-                await Task.Run(() => ZipFile.ExtractToDirectory(launcherzip, path));
-                await Task.Run(() => System.IO.File.Delete(launcherzip));
+                ZipFile.ExtractToDirectory(filename, path);
+                System.IO.File.Delete(filename);
             }
             else
             {
                 Status = LauncherStatus.uptodate;
-                System.IO.File.Delete(launcherzip);
+                System.IO.File.Delete(filename);
             }
             await Task.Delay(TimeSpan.FromSeconds(2));
-            Update.Content = "Check for Updates!";
+            Update.Content = "Check for Updates";
         }
     }
 }
