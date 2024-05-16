@@ -4,23 +4,21 @@
     ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" ContentRendered="CheckFiles"
     Title="OSFR Launcher" Height="520" Width="700">
     <Grid>
-        <MediaElement Stretch="UniformToFill" Name="background">
-            <MediaElement.Triggers>
-                <EventTrigger RoutedEvent="MediaElement.Loaded">
-                    <EventTrigger.Actions>
-                        <BeginStoryboard>
-                            <Storyboard>
-                                <MediaTimeline Source="images/background.mp4" Storyboard.TargetName="background" RepeatBehavior="Forever"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger.Actions>
-                </EventTrigger>
-            </MediaElement.Triggers>
-        </MediaElement>
+        <MediaElement Stretch="UniformToFill" x:Name="background" Source="images/background.mp4" LoadedBehavior="Manual" Loaded="BackgroundPlay" UnloadedBehavior="Manual" MediaEnded="BackgroundLoop" ></MediaElement>
         <Image Stretch="Uniform" Source="images/OSFRLogo.png" HorizontalAlignment="Center" Height="500" Margin="10,-200,0,0" Width="600" VerticalAlignment="Center"/>
         <ProgressBar x:Name="progressBar" Height="30" Width="690" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5" Background="White" Visibility="Hidden" Margin="0,455,0,0" BorderBrush="{x:Null}"/>
         <TextBlock Name="Version" Text="Version 1.0.0" Visibility="Hidden" Height="23" FontSize="14" Foreground="#DDFFFFFF" MinWidth="150" Padding="10,1,10,1" FontFamily="Yu Gothic UI Semibold" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" Opacity="0.4" Width="10" VerticalAlignment="Center" Margin="0,0,0,-405"/>
         <TextBlock Name="StatusInfo" Text="" Height="20" FontSize="14" Foreground="#DDFFFFFF" VerticalAlignment="Center" MinWidth="150" Padding="10,1,10,1" FontFamily="Yu Gothic UI Semibold" FontWeight="Bold" HorizontalAlignment="Center" Width="49" Opacity="0.9" TextAlignment="Center" Margin="0,455,0,0"/>
+        <Button Name="PlayVideo" Click="BackgroundPlay" FontSize="14" Foreground="#DDFFFFFF" FontFamily="Yu Gothic UI Semibold" FontWeight="Bold" Opacity="0.4" BorderBrush="{x:Null}" Cursor="Hand" ClickMode="Press" Margin="-655,0,0,-450" VerticalAlignment="Center" HorizontalAlignment="Center" Height="19" Width="19">
+            <Button.Background>
+                <ImageBrush ImageSource="/play.png"/>
+            </Button.Background>
+        </Button>
+        <Button Name="StopVideo"  Click="BackgroundStop" FontSize="14" Foreground="#DDFFFFFF" FontFamily="Yu Gothic UI Semibold" FontWeight="Bold" Opacity="0.4" BorderBrush="{x:Null}" Cursor="Hand" Width="19" ClickMode="Press" Margin="-655,0,0,-450" HorizontalAlignment="Center" VerticalAlignment="Center" Height="19">
+            <Button.Background>
+                <ImageBrush ImageSource="/pause.png"/>
+            </Button.Background>
+        </Button>
         <Button Name="Update" Click="CheckForUpdate" Visibility="Hidden" Opacity="0.85" Content="Check for Updates!" Height="23" FontSize="14" Foreground="#DDFFFFFF" MinWidth="150" Padding="10,1,10,1" FontFamily="Yu Gothic UI Semibold" FontWeight="Bold" HorizontalAlignment="Center" Width="50" BorderBrush="{x:Null}" Cursor="Hand" ClickMode="Press" VerticalAlignment="Center" Margin="0,0,0,-450">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

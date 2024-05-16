@@ -220,6 +220,25 @@ namespace OSFRLauncher
             }
         }
 
+        private void BackgroundPlay(object sender, RoutedEventArgs e)
+        {
+            PlayVideo.Visibility = Visibility.Hidden;
+            StopVideo.Visibility = Visibility.Visible;    
+            background.Play();
+        }
+
+        private void BackgroundStop(object sender, RoutedEventArgs e)
+        {
+            PlayVideo.Visibility = Visibility.Visible;
+            StopVideo.Visibility = Visibility.Hidden;
+            background.Pause();
+        }
+
+        private void BackgroundLoop(object sender, RoutedEventArgs e)
+        {
+            background.Position = TimeSpan.FromSeconds(0);
+        }
+
         private async void CheckForUpdate(object sender, RoutedEventArgs e)
         {
             try
