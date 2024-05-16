@@ -9,21 +9,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using Octokit;
 using System.Diagnostics;
+
 namespace OSFRLauncher
 {
-    enum LauncherStatus
-    {
-        play,
-        running,
-        installing,
-        installingfailed,
-        extracting,
-        extractingfailed,
-        updating,
-        updatingfailed,
-        uptodate
-    }
-
     public partial class MainWindow : Window
     {
         private string path;
@@ -31,47 +19,6 @@ namespace OSFRLauncher
         private string clientzip;
         private string serverzip;
         private string directx9exe;
-        private LauncherStatus _status;
-        internal LauncherStatus Status
-        {
-            get => _status;
-            set
-            {
-                _status = value;
-                switch (_status)
-                {
-                    case LauncherStatus.play:
-                        PlayButton.Content = "Play";
-                        break;
-                    case LauncherStatus.running:
-                        PlayButton.Content = "Playing";
-                        break;
-                    case LauncherStatus.installing:
-                        StatusInfo.Text = "Installing";
-                        break;
-                    case LauncherStatus.installingfailed:
-                        StatusInfo.Text = "Installing Failed";
-                        break;
-                    case LauncherStatus.extracting:
-                        StatusInfo.Text = "Extracting";
-                        break;
-                    case LauncherStatus.extractingfailed:
-                        StatusInfo.Text = "Extracting Failed";
-                        break;
-                    case LauncherStatus.updating:
-                        Update.Content = "Updating";
-                        break;
-                    case LauncherStatus.updatingfailed:
-                        Update.Content = "Updating Failed";
-                        break;
-                    case LauncherStatus.uptodate:
-                        Update.Content = "No Update Found";
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
 
         public MainWindow()
         {
@@ -127,8 +74,8 @@ namespace OSFRLauncher
             catch (Exception error)
             {
                 // Catch error when installing the game files has failed
-                Status = LauncherStatus.installingfailed;
-                MessageBox.Show($"Error installing game files: {error}");
+                StatusInfo.Text = "Failed Installing Game Files";
+                MessageBox.Show($"Failed Installing Game Files: {error}");
             }
         }
 
@@ -150,7 +97,8 @@ namespace OSFRLauncher
             catch (Exception error)
             {
                 // Catch error when installing directx9 has failed
-                MessageBox.Show($"Error installing directx9: {error}");
+                StatusInfo.Text = "Failed Installing DirectX9";
+                MessageBox.Show($"Failed Installing DirectX9: {error}");
             }
         }
 
@@ -158,6 +106,8 @@ namespace OSFRLauncher
         {
             try
             {
+                progressBar.Visibility = Visibility.Hidden;
+                StatusInfo.Visibility = Visibility.Hidden;
                 ProcessStartInfo start = new ProcessStartInfo(directx9exe);
                 start.WorkingDirectory = Path.Combine(path, "dxwebsetup.exe");
                 Process.Start(start);
@@ -166,7 +116,7 @@ namespace OSFRLauncher
             catch (Exception error)
             {
                 // Catch error when launching directx9 installer has failed
-                MessageBox.Show($"Error running directx9 installer: {error}");
+                MessageBox.Show($"Failed Running DirectX9 Installer: {error}");
             }
         }
 
@@ -189,7 +139,7 @@ namespace OSFRLauncher
                     System.IO.File.Delete(clientzip);
 
                     // Relaunches the app after everything is finished downloading & extracting
-                    StatusInfo.Text = "Relaunching Now";
+                    StatusInfo.Text = "Re-Launching Now";
                     await Task.Delay(800);
                     ProcessStartInfo relaunchapp = new ProcessStartInfo();
                     Directory.GetCurrentDirectory();
@@ -201,8 +151,8 @@ namespace OSFRLauncher
             catch (Exception error)
             {
                 // Catch error if extracting has failed
-                Status = LauncherStatus.extractingfailed;
-                MessageBox.Show($"Error extracting game files: {error}");
+                StatusInfo.Text = "Failed Extracting Game Files";
+                MessageBox.Show($"Failed Extracting Game Files: {error}");
             }
         }
 
@@ -253,10 +203,9 @@ namespace OSFRLauncher
         {
             try
             {
-                if (System.IO.File.Exists(clientexe) && Status == LauncherStatus.play)
+                if (System.IO.File.Exists(clientexe))
                 {
                     // Starts the client bat
-                    Status = LauncherStatus.running;
                     ProcessStartInfo start = new ProcessStartInfo(clientexe);
                     start.WorkingDirectory = Path.Combine(path, "Client");
                     Process.Start(start);
@@ -273,39 +222,47 @@ namespace OSFRLauncher
 
         private async void CheckForUpdate(object sender, RoutedEventArgs e)
         {
-            string workspacename = "Junynx";
-            string repositoryname = "OSFRLauncher";
-            string filename = "release.zip";
-
-            var client = new GitHubClient(new ProductHeaderValue(repositoryname));
-            Release latestRelease = client.Repository.Release.GetLatest(workspacename, repositoryname).Result;
-            var asset = latestRelease.Assets[0];
-
-            // Setup the versions
-            Version latestGitHubVersion = new Version(latestRelease.TagName);
-            Version localVersion = new Version("1.0.0");
-
-            // Compare versions
-            int versionComparison = localVersion.CompareTo(latestGitHubVersion);
-            if (versionComparison < 0)
+            try
             {
-                // Downloads the files
-                Status = LauncherStatus.updating;
-                var webClient = new WebClient();
-                webClient.Headers.Add(HttpRequestHeader.UserAgent, "user-agent");
-                await webClient.DownloadFileTaskAsync(asset.BrowserDownloadUrl, filename);
+                string workspacename = "Junynx";
+                string repositoryname = "OSFRLauncher";
+                string filename = "release.zip";
 
-                // Extracts the downloaded files
-                ZipFile.ExtractToDirectory(filename, path);
-                System.IO.File.Delete(filename);
+                var client = new GitHubClient(new ProductHeaderValue(repositoryname));
+                Release latestRelease = client.Repository.Release.GetLatest(workspacename, repositoryname).Result;
+                var asset = latestRelease.Assets[0];
+
+                // Setup the versions
+                Version latestGitHubVersion = new Version(latestRelease.TagName);
+                Version localVersion = new Version("1.0.0");
+
+                // Compare versions
+                int versionComparison = localVersion.CompareTo(latestGitHubVersion);
+                if (versionComparison < 0)
+                {
+                    // Downloads the files
+                    Update.Content = "Updating";
+                    var webClient = new WebClient();
+                    webClient.Headers.Add(HttpRequestHeader.UserAgent, "user-agent");
+                    await webClient.DownloadFileTaskAsync(asset.BrowserDownloadUrl, filename);
+
+                    // Extracts the downloaded files
+                    ZipFile.ExtractToDirectory(filename, path);
+                    System.IO.File.Delete(filename);
+                }
+                else
+                {
+                    Update.Content = "No Updates Found";
+                    System.IO.File.Delete(filename);
+                }
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                Update.Content = "Check for Updates";
             }
-            else
+            catch (Exception error)
             {
-                Status = LauncherStatus.uptodate;
-                System.IO.File.Delete(filename);
+                // Catch error
+                MessageBox.Show($"Error Occured While Updating The Launcher: {error}");
             }
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            Update.Content = "Check for Updates";
         }
     }
 }
