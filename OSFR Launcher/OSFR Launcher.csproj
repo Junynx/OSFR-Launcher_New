@@ -145,8 +145,8 @@
     <Content Include="images\pause.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Resource Include="play.png" />
     <Resource Include="pause.png" />
+    <Resource Include="play.png" />
     <Resource Include="icon.ico" />
     <Content Include="images\background.mp4">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
