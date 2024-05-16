@@ -47,22 +47,22 @@ namespace OSFRLauncher
                         PlayButton.Content = "Playing";
                         break;
                     case LauncherStatus.installing:
-                        StatusInfo.Text = "Installing...";
+                        StatusInfo.Text = "Installing";
                         break;
                     case LauncherStatus.installingfailed:
-                        StatusInfo.Text = "Installing Failed...";
+                        StatusInfo.Text = "Installing Failed";
                         break;
                     case LauncherStatus.extracting:
-                        StatusInfo.Text = "Extracting...";
+                        StatusInfo.Text = "Extracting";
                         break;
                     case LauncherStatus.extractingfailed:
-                        StatusInfo.Text = "Extracting Failed...";
+                        StatusInfo.Text = "Extracting Failed";
                         break;
                     case LauncherStatus.updating:
-                        Update.Content = "Updating...";
+                        Update.Content = "Updating";
                         break;
                     case LauncherStatus.updatingfailed:
-                        Update.Content = "Updating Failed...";
+                        Update.Content = "Updating Failed";
                         break;
                     case LauncherStatus.uptodate:
                         Update.Content = "No Update Found";
@@ -114,9 +114,9 @@ namespace OSFRLauncher
                     WebClient webClient = new WebClient();
                     webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
                     webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(ExtractFiles);
-                    StatusInfo.Text = "Installing Server Files...";
+                    StatusInfo.Text = "Installing Server Files";
                     await webClient.DownloadFileTaskAsync(new Uri("https://osfr.editz.dev/Server.zip"), serverzip);
-                    StatusInfo.Text = "Installing Client Files...";
+                    StatusInfo.Text = "Installing Client Files";
                     await webClient.DownloadFileTaskAsync(new Uri("https://osfr.editz.dev/Client.zip"), clientzip);
                 }
                 else
@@ -136,7 +136,7 @@ namespace OSFRLauncher
         {
             try
             {
-                StatusInfo.Text = "installing Directx9...";
+                StatusInfo.Text = "installing DirectX9";
                 progressBar.Visibility = Visibility.Visible;
                 Installbutton.Visibility = Visibility.Hidden;
                 WebClient webClient = new WebClient();
@@ -177,23 +177,25 @@ namespace OSFRLauncher
                 if (System.IO.File.Exists(serverzip))
                 {
                     // Extracts server files
-                    StatusInfo.Text = "Extracting Server Files...";
+                    StatusInfo.Text = "Extracting Server Files";
                     ZipFile.ExtractToDirectory(serverzip, path);
                     System.IO.File.Delete(serverzip);
                 }
                 if (System.IO.File.Exists(clientzip))
                 {
                     // Extracts client files
-                    StatusInfo.Text = "Extracting Client Files...";
+                    StatusInfo.Text = "Extracting Client Files";
                     await Task.Run(() => ZipFile.ExtractToDirectory(clientzip, path));
                     System.IO.File.Delete(clientzip);
-                    Installbutton.Visibility = Visibility.Visible;
-                    progressBar.Visibility = Visibility.Hidden;
-                    StatusInfo.Visibility = Visibility.Hidden;
-                    Installbutton.Visibility = Visibility.Hidden;
-                    PlayButton.Visibility = Visibility.Visible;
-                    Update.Visibility = Visibility.Visible;
-                    Version.Visibility = Visibility.Visible;
+
+                    // Relaunches the app after everything is finished downloading & extracting
+                    StatusInfo.Text = "Relaunching Now";
+                    await Task.Delay(800);
+                    ProcessStartInfo relaunchapp = new ProcessStartInfo();
+                    Directory.GetCurrentDirectory();
+                    relaunchapp.FileName = "OSFR Launcher.exe";
+                    Process.Start(relaunchapp);
+                    Process.GetCurrentProcess().Kill();
                 }
             }
             catch (Exception error)
