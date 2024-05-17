@@ -57,6 +57,7 @@ namespace OSFRLauncher
                     // Downloads client and server files
                     progressBar.Visibility = Visibility.Visible;
                     Installbutton.Visibility = Visibility.Hidden;
+                    StopVideo.Visibility = Visibility.Hidden;
                     Version.Visibility = Visibility.Hidden;
                     WebClient webClient = new WebClient();
                     webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
