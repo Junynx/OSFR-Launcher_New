@@ -118,6 +118,10 @@ namespace OSFRLauncher
                 }
                 else if (dxwebsetup.Length == 0)
                 {
+                    // This means they either installed directx9 or forced closed it
+                    // If they installed it the next time they click on 'Install' it will install the client files when the launcher relaunched
+                    // If they forced closed it before they installed it or by accident it will relaunch the launcher anyway
+
                     StatusInfo.Text = "Re-Launching now";
                     System.IO.File.Delete(directx9exe);
                     await Task.Delay(800);
