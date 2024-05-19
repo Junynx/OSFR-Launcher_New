@@ -29,6 +29,7 @@ namespace OSFRLauncher
             clientzip = Path.Combine(path, "Client.zip");
             serverzip = Path.Combine(path, "Server.zip");
             clientexe = Path.Combine(path, "Client", "FreeRealms.bat");
+            directx9exe = Path.Combine(path, "dxwebsetup.exe");
         }
 
         private void CheckFiles(object sender, EventArgs e)
@@ -85,12 +86,10 @@ namespace OSFRLauncher
             try
             {
                 StatusInfo.Text = "installing DirectX9";
+                StopVideo.Visibility = Visibility.Hidden;
                 progressBar.Visibility = Visibility.Visible;
                 Installbutton.Visibility = Visibility.Hidden;
                 WebClient webClient = new WebClient();
-                string directx9folder = Path.Combine(path, "directx9");
-                Directory.CreateDirectory(directx9folder);
-                directx9exe = Path.Combine(directx9folder, "dxwebsetup.exe");
                 webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgress);
                 webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(RunDirectx9Installer);
                 await webClient.DownloadFileTaskAsync(new Uri("https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe"), directx9exe);
@@ -103,16 +102,31 @@ namespace OSFRLauncher
             }
         }
 
-        private void RunDirectx9Installer(object sender, AsyncCompletedEventArgs e)
+        private async void RunDirectx9Installer(object sender, AsyncCompletedEventArgs e)
         {
             try
             {
-                progressBar.Visibility = Visibility.Hidden;
-                StatusInfo.Visibility = Visibility.Hidden;
                 ProcessStartInfo start = new ProcessStartInfo(directx9exe);
                 start.WorkingDirectory = Path.Combine(path, "dxwebsetup.exe");
-                Process.Start(start);
-                Close();
+                var process = Process.Start(start);
+                process.WaitForExit();
+
+                var dxwebsetup = Process.GetProcessesByName("dxwebsetup.exe");
+                if (dxwebsetup.Length == 1)
+                {
+                    return; // do nothing
+                }
+                else if (dxwebsetup.Length == 0)
+                {
+                    StatusInfo.Text = "Re-Launching now";
+                    System.IO.File.Delete(directx9exe);
+                    await Task.Delay(800);
+                    ProcessStartInfo relaunchapp = new ProcessStartInfo();
+                    Directory.GetCurrentDirectory();
+                    relaunchapp.FileName = "OSFR Launcher.exe";
+                    Process.Start(relaunchapp);
+                    Process.GetCurrentProcess().Kill();
+                }
             }
             catch (Exception error)
             {
@@ -209,9 +223,9 @@ namespace OSFRLauncher
                     // Starts the client bat
                     ProcessStartInfo start = new ProcessStartInfo(clientexe);
                     start.WorkingDirectory = Path.Combine(path, "Client");
-                    Process.Start(start);
                     Process.GetProcessesByName("OSFR Launcher.exe");
                     WindowState = WindowState.Minimized;
+                    Process.Start(start);
                 }
             }
             catch (Exception error)
@@ -224,7 +238,7 @@ namespace OSFRLauncher
         private void BackgroundPlay(object sender, RoutedEventArgs e)
         {
             PlayVideo.Visibility = Visibility.Hidden;
-            StopVideo.Visibility = Visibility.Visible;    
+            StopVideo.Visibility = Visibility.Visible;
             background.Play();
         }
 
@@ -281,7 +295,7 @@ namespace OSFRLauncher
             catch (Exception error)
             {
                 // Catch error
-                MessageBox.Show($"Error Occured While Updating The Launcher: {error}");
+                MessageBox.Show($"Error occured while updating the launcher: {error}");
             }
         }
     }
